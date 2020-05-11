@@ -1,4 +1,6 @@
 # mac-setup
 
 ## Run with
-/bin/sh <(curl -s https://raw.githubusercontent.com/chriscamplejohn/mac-setup/master/mac-setup.sh) all
+```sh
+curl https://raw.githubusercontent.com/chriscamplejohn/mac-setup/master/mac-setup.sh --output mac-setup.sh && chmod +x ./mac-setup.sh && ./mac-setup.sh all
+```

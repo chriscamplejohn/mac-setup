@@ -55,6 +55,15 @@ install_chrome() {
   fi
 }
 
+install_spotify() {
+  if ! brew cask list spotify >/dev/null; then
+    brew cask install spotify
+  else
+    println "Spotify already installed...updating!"
+    brew cask upgrade spotify
+  fi
+}
+
 install_vscode() {
   if ! command -v code >/dev/null; then
     brew cask install visual-studio-code
@@ -114,6 +123,33 @@ install_dotnetcore() {
   else
     println "Dotnet Core SDK already installed...updating!"
     brew cask upgrade dotnet-sdk
+  fi
+}
+
+install_git() {
+  if ! brew list git >/dev/null; then
+    brew install git
+  else
+    println "Git already installed...updating!"
+    brew upgrade git
+  fi
+}
+
+install_github() {
+  if ! brew cask list github >/dev/null; then
+    brew cask install github
+  else
+    println "Github Desktop already installed...updating!"
+    brew cask upgrade github
+  fi
+}
+
+install_npm() {
+  if ! command -v npm >/dev/null; then
+    brew install npm
+  else
+    println "NPM already installed...updating!"
+    brew upgrade npm
   fi
 }
 
