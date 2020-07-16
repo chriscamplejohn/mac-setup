@@ -31,17 +31,19 @@ idempotent_append_to_file() {
   local file="$1"
   local text="$2"
 
-  if ! grep -qF "$text" $file; then
-    echo "$text" >> $file
+  ensure_file_exists "$file"
+
+  if ! grep -qF "$text" "$file"; then
+    echo "$text" >> "$file"
   fi
 }
 
 idempotent_append_to_bash_profile() {
-  idempotent_append_to_file ~/.bash_profile $@
+  idempotent_append_to_file ~/.bash_profile "$@"
 }
 
 idempotent_append_to_zprofile() {
-  idempotent_append_to_file ~/.zprofile $@
+  idempotent_append_to_file ~/.zprofile "$@"
 }
 
 reload_bash_profile() {
@@ -86,6 +88,7 @@ install_zprofile_redirect() {
 }
 
 install_useful_aliases() {
+  idempotent_append_to_bash_profile "alias d=docker"
   idempotent_append_to_bash_profile "alias dc=docker-compose"
   idempotent_append_to_bash_profile "alias gc=gcloud"
   idempotent_append_to_bash_profile "alias tf=terraform"
@@ -156,7 +159,7 @@ install_virtualbox() {
     brew cask install virtualbox
   else
     println "Virtualbox already installed...updating!"
-    brew cask update virtualbox
+    brew cask upgrade virtualbox
   fi
 }
 
@@ -319,8 +322,6 @@ install_gcp_sdk() {
   ## ZSH Specific
   idempotent_append_to_zprofile 'source "$(brew --prefix)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"'
   idempotent_append_to_zprofile 'source "$(brew --prefix)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"'
-
-  idempotent_append_to_bash_profile "alia"
 }
 
 install_rectangle() {
@@ -330,6 +331,45 @@ install_rectangle() {
     println "Rectangle already installed...updating!"
     brew cask upgrade rectangle
   fi 
+}
+
+install_mysql_client() {
+  if ! brew list mysql-client >/dev/null 2>&1; then
+    brew install mysql-client
+  else
+    println "MySQL Client already installed...updating!"
+    brew upgrade mysql-client
+  fi 
+
+  idempotent_append_to_bash_profile 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"'
+  reload_bash_profile
+}
+
+install_terraform() {
+  if ! brew list terraform >/dev/null 2>&1; then
+    brew install terraform
+  else
+    println "Terraform already installed...updating!"
+    brew upgrade terraform
+  fi
+}
+
+install_postman() {
+  if ! brew cask list terraform >/dev/null 2>&1; then
+    brew cask install postman
+  else
+    println "Postman already installed...updating!"
+    brew cask upgrade postman
+  fi
+}
+
+install_tree() {
+  if ! brew list tree >/dev/null 2>&1; then
+    brew install tree
+  else
+    println "Tree already installed...updating!"
+    brew upgrade tree
+  fi
 }
 
 display_usage() {
