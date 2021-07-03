@@ -38,6 +38,10 @@ idempotent_append_to_file() {
   fi
 }
 
+idempotent_append_to_profile() {
+  idempotent_append_to_zprofile "$@"
+}
+
 idempotent_append_to_bash_profile() {
   idempotent_append_to_file ~/.bash_profile "$@"
 }
@@ -46,8 +50,26 @@ idempotent_append_to_zprofile() {
   idempotent_append_to_file ~/.zprofile "$@"
 }
 
-reload_bash_profile() {
-  source ~/.bash_profile
+reload_profile() {
+  source ~/.zprofile
+}
+
+brew_install_or_upgrade() {
+  if ! brew list "$1" >/dev/null 2>&1; then
+    brew install "$1"
+  else
+    println "$1 already installed...updating!"
+    brew upgrade "$1"
+  fi
+}
+
+brew_cask_install_or_upgrade() {
+  if ! brew list --cask "$1" >/dev/null 2>&1; then
+    brew install --cask "$1"
+  else
+    println "$1 already installed...updating!"
+    brew upgrade --cask "$1"
+  fi
 }
 
 install() {
@@ -81,139 +103,67 @@ install_homebrew() {
   brew -v
 }
 
-install_zprofile_redirect() {
-  ensure_bash_profile_exists
+install_bash_profile_redirect() {
+  ensure_zprofile_exists
   
-  idempotent_append_to_zprofile "source ~/.bash_profile"
-}
-
-install_useful_aliases() {
-  idempotent_append_to_bash_profile "alias d=docker"
-  idempotent_append_to_bash_profile "alias dc=docker-compose"
-  idempotent_append_to_bash_profile "alias gc=gcloud"
-  idempotent_append_to_bash_profile "alias tf=terraform"
-  idempotent_append_to_bash_profile "alias tg=terragrunt"
-
-  # TODO - fix this! Need multiline support from idempotent_append_to_bash_profile
-  # idempotent_append_to_bash_profile "function awsp() {" 'printf "Setting AWS Profile to %s" "$1"' 'export AWS_PROFILE=$1' "}"
-
-  reload_bash_profile
+  idempotent_append_to_bash_profile "source ~/.zprofile"
 }
 
 install_chrome() {
-  if ! brew cask list google-chrome >/dev/null 2>&1; then
-    brew cask install google-chrome
+  if ! brew list --cask google-chrome >/dev/null 2>&1; then
+    brew install --cask google-chrome
   else
     println "Chrome already installed...updating!"
-    brew cask upgrade google-chrome
+    brew upgrade --cask google-chrome
   fi
 }
 
 install_spotify() {
-  if ! brew cask list spotify >/dev/null 2>&1; then
-    brew cask install spotify
-  else
-    println "Spotify already installed...updating!"
-    brew cask upgrade spotify
-  fi
+  brew_cask_install_or_upgrade spotify
 }
 
 install_vscode() {
-  if ! command -v code >/dev/null 2>&1; then
-    brew cask install visual-studio-code
-  else
-    println "VSCode already installed...updating!"
-    brew cask upgrade visual-studio-code
-  fi
+  brew_cask_install_or_upgrade visual-studio-code
 }
 
 install_slack() {
-  if ! brew cask list slack >/dev/null 2>&1; then
-    brew cask install slack
-  else
-    println "Slack already installed...updating!"
-    brew cask upgrade slack
-  fi
+  brew_cask_install_or_upgrade slack
 }
 
 install_docker() {
-  if ! brew cask list docker >/dev/null 2>&1; then
-    brew cask install docker
-  else
-    println "Docker Desktop already installed...updating!"
-    brew cask upgrade docker
-  fi
+  brew_cask_install_or_upgrade docker
+  
+  idempotent_append_to_profile "alias d=docker"
+  idempotent_append_to_profile "alias dc=docker-compose"
+  reload_profile
 }
 
 install_authy() {
-  if ! brew cask list authy >/dev/null 2>&1; then
-    brew cask install authy
-  else
-    println "Authy already installed...updating!"
-    brew cask upgrade authy
-  fi
+  brew_cask_install_or_upgrade authy
 }
 
 install_virtualbox() {
-  if ! brew cask list virtualbox >/dev/null 2>&1; then
-    brew cask install virtualbox
-  else
-    println "Virtualbox already installed...updating!"
-    brew cask upgrade virtualbox
-  fi
+  brew_cask_install_or_upgrade virtualbox
 }
 
 install_firefox() {
-  if ! brew cask list firefox >/dev/null 2>&1; then
-    brew cask install firefox
-  else
-    brew cask upgrade firefox
-  fi
+  brew_cask_install_or_upgrade firefox
 }
 
 install_dotnetcore() {
-  if ! brew cask list dotnet-sdk >/dev/null 2>&1; then
-    brew cask install dotnet-sdk
-  else
-    println "Dotnet Core SDK already installed...updating!"
-    brew cask upgrade dotnet-sdk
-  fi
+  brew_cask_install_or_upgrade dotnet-sdk
 }
 
 install_git() {
-  if ! brew list git >/dev/null 2>&1; then
-    brew install git
-  else
-    println "Git already installed...updating!"
-    brew upgrade git
-  fi
-}
-
-install_github() {
-  if ! brew cask list github >/dev/null 2>&1; then
-    brew cask install github
-  else
-    println "Github Desktop already installed...updating!"
-    brew cask upgrade github
-  fi
+  brew_install_or_upgrade git
 }
 
 install_npm() {
-  if ! command -v npm >/dev/null; then
-    brew install npm
-  else
-    println "NPM already installed...updating!"
-    brew upgrade npm
-  fi
+  brew_install_or_upgrade npm
 }
 
 install_nss() {
-  if ! command -v certutil >/dev/null; then
-    brew install nss
-  else
-    println "NSS already installed...updating!"
-    brew upgrade nss
-  fi
+  brew_install_or_upgrade nss
 }
 
 install_mkcert() {
@@ -227,21 +177,11 @@ install_mkcert() {
 }
 
 install_go() {
-  if ! command -v go >/dev/null; then
-    brew install go
-  else
-    println "Go already installed...updating!"
-    brew upgrade go
-  fi
+  brew_install_or_upgrade go
 }
 
 install_iterm2() {
-  if ! brew cask list iterm2 >/dev/null 2>&1; then
-     brew cask install iterm2
-  else
-    println "ITerm2 already installed...updating!"
-    brew cask upgrade iterm2
-  fi
+  brew_cask_install_or_upgrade iterm2
 }
 
 install_powerline_fonts() {
@@ -257,13 +197,8 @@ install_powerline_fonts() {
 
 install_nerd_fonts() {
   brew tap homebrew/cask-fonts
-
-  if ! brew cask list font-hack-nerd-font >/dev/null 2>&1; then
-    brew cask install font-hack-nerd-font
-  else
-    println "Nerd Fonts already installed...updating!"
-    brew cask upgrade font-hack-nerd-font
-  fi
+  
+  brew_cask_install_or_upgrade font-hack-nerd-font
 }
 
 install_spaceship_prompt() {
@@ -276,15 +211,10 @@ install_spaceship_prompt() {
 }
 
 install_ruby() {
-  if ! brew list ruby >/dev/null 2>&1; then
-    brew install ruby
-  else
-    println "Ruby already installed...updating!"
-    brew upgrade ruby
-  fi
+  brew_install_or_upgrade ruby
 
-  idempotent_append_to_bash_profile 'export PATH="/usr/local/opt/ruby/bin:$PATH"'
-  reload_bash_profile
+  idempotent_append_to_profile 'export PATH="/usr/local/opt/ruby/bin:$PATH"'
+  reload_profile
 }
 
 install_colorls() {
@@ -295,81 +225,54 @@ install_colorls() {
     gem update colorls
   fi
 
-  idempotent_append_to_bash_profile "export PATH=\""'$PATH:$(ruby -e '"'puts Gem.bindir')\""
-  idempotent_append_to_bash_profile "source $(dirname $(gem which colorls))/tab_complete.sh"
-  idempotent_append_to_bash_profile "alias ls='colorls'"
-  idempotent_append_to_bash_profile "alias ll='colorls -lA --sd'"
-  reload_bash_profile
+  idempotent_append_to_profile "export PATH=\""'$PATH:$(ruby -e '"'puts Gem.bindir')\""
+  idempotent_append_to_profile "source $(dirname $(gem which colorls))/tab_complete.sh"
+  idempotent_append_to_profile "alias ls='colorls'"
+  idempotent_append_to_profile "alias ll='colorls -lA --sd'"
+  reload_profile
 }
 
 install_aws_cli() {
-  if ! brew list awscli >/dev/null 2>&1; then
-    brew install awscli
-  else
-    println "AWS CLI already installed...updating!"
-    brew upgrade awscli
-  fi
+  brew_install_or_upgrade awscli
 }
 
 install_gcp_sdk() {
-  if ! brew cask list google-cloud-sdk >/dev/null 2>&1; then
-    brew cask install google-cloud-sdk
-  else
-    println "Google Cloud SDK already installed...updating!"
-    brew cask upgrade google-cloud-sdk
-  fi
+  brew_cask_install_or_upgrade google-cloud-sdk
 
   ## ZSH Specific
   idempotent_append_to_zprofile 'source "$(brew --prefix)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"'
   idempotent_append_to_zprofile 'source "$(brew --prefix)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"'
+  idempotent_append_to_profile "alias gc=gcloud"
 }
 
 install_rectangle() {
-  if ! brew cask list rectangle >/dev/null 2>&1; then
-    brew cask install rectangle
-  else
-    println "Rectangle already installed...updating!"
-    brew cask upgrade rectangle
-  fi 
+  brew_cask_install_or_upgrade rectangle
 }
 
 install_mysql_client() {
-  if ! brew list mysql-client >/dev/null 2>&1; then
-    brew install mysql-client
-  else
-    println "MySQL Client already installed...updating!"
-    brew upgrade mysql-client
-  fi 
+  brew_install_or_upgrade mysql-client
 
-  idempotent_append_to_bash_profile 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"'
-  reload_bash_profile
+  idempotent_append_to_profile 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"'
+  reload_profile
 }
 
 install_terraform() {
-  if ! brew list terraform >/dev/null 2>&1; then
-    brew install terraform
-  else
-    println "Terraform already installed...updating!"
-    brew upgrade terraform
-  fi
+  brew_install_or_upgrade terraform
+  
+  idempotent_append_to_profile "alias tf=terraform"
+  reload_profile
 }
 
 install_postman() {
-  if ! brew cask list terraform >/dev/null 2>&1; then
-    brew cask install postman
-  else
-    println "Postman already installed...updating!"
-    brew cask upgrade postman
-  fi
+  brew_cask_install_or_upgrade postman
 }
 
 install_tree() {
-  if ! brew list tree >/dev/null 2>&1; then
-    brew install tree
-  else
-    println "Tree already installed...updating!"
-    brew upgrade tree
-  fi
+  brew_install_or_upgrade tree
+}
+
+install_java() {
+  brew_install_or_upgrade java
 }
 
 display_usage() {
