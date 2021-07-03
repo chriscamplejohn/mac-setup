@@ -273,6 +273,9 @@ install_tree() {
 
 install_java() {
   brew_install_or_upgrade java
+  
+  # Sym link to allow the java wrapper to find it
+  sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
 }
 
 display_usage() {
